@@ -23,6 +23,18 @@ lean:
   toolchain_url: https://raw.githubusercontent.com/leanprover-community/mathlib4/master/lean-toolchain
 
 knowledge:
-  # arXiv abstracts are optional hints. They are never proofs.
+  # arXiv abstracts are untrusted hints. They are never proofs.
   arxiv: false
+  # Wikipedia and OEIS. Also untrusted.
+  web: true
   db: aimath.sqlite
+  # Text you already have: papers, notes, .md, .txt.
+  notes: notes
+  # Excerpts from other provers (.v, .thy, .mm). Untrusted until formalized in Lean.
+  foreign: foreign
+
+distributed:
+  # Loopback needs no token. Any other host requires one.
+  host: 127.0.0.1
+  port: 8765
+  token: ""

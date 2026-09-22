@@ -1,0 +1,14 @@
+[
+  {"name": "Riemann hypothesis", "field": "number theory", "note": "Open. Do not claim a proof from a tactic script."},
+  {"name": "Goldbach conjecture", "field": "number theory", "note": "Open. Even integers greater than 2 as a sum of two primes."},
+  {"name": "Collatz conjecture", "field": "number theory", "note": "Open. The 3n+1 map."},
+  {"name": "Twin prime conjecture", "field": "number theory", "note": "Open. Infinitely many twin primes."},
+  {"name": "Birch and Swinnerton-Dyer conjecture", "field": "number theory", "note": "Open. Ranks of elliptic curves."},
+  {"name": "Hodge conjecture", "field": "geometry", "note": "Open. Algebraic cycles on projective varieties."},
+  {"name": "Navier-Stokes regularity", "field": "analysis", "note": "Open. Smooth solutions of the Navier-Stokes equations."},
+  {"name": "Yang-Mills mass gap", "field": "physics", "note": "Open. A quantum Yang-Mills theory with a mass gap."},
+  {"name": "P versus NP", "field": "computation", "note": "Open. Do not treat a Lean sketch as a resolution."},
+  {"name": "Hadwiger conjecture", "field": "combinatorics", "note": "Open. Chromatic number and connected minors."},
+  {"name": "Jacobian conjecture", "field": "algebra", "note": "Open. Polynomial maps with constant Jacobian determinant."},
+  {"name": "Sendov conjecture", "field": "analysis", "note": "Open. Critical points of polynomials."}
+]

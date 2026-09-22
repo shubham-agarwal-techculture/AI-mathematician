@@ -253,14 +253,27 @@ class Retriever:
         corpus: Corpus,
         *,
         arxiv: bool = False,
+        web: bool = False,
+        notes_dir: Path | None = None,
+        foreign_dir: Path | None = None,
         http_get=None,
     ) -> None:
         self.workspace = workspace
         self.corpus = corpus
         self.arxiv = arxiv
+        self.web = web
+        self.notes_dir = notes_dir
+        self.foreign_dir = foreign_dir
         self.http_get = http_get
 
     def search(self, query: str, limit: int = 8) -> list[Hit]:
+        from aimath.knowledge.sources import (
+            match_open_problem,
+            search_folder,
+            search_oeis,
+            search_wikipedia,
+        )
+
         hits = search_mathlib(self.workspace, query, limit=limit)
         for row in self.corpus.search(query, limit=limit):
             hits.append(
@@ -272,12 +285,34 @@ class Retriever:
                     untrusted=False,
                 )
             )
+        problem = match_open_problem(query)
+        if problem is not None:
+            hits.append(
+                Hit(
+                    source="open-problem",
+                    title=str(problem["name"]),
+                    text=str(problem.get("note") or ""),
+                    module=None,
+                    untrusted=True,
+                )
+            )
+        hits.extend(search_folder(self.notes_dir, query, "notes"))
+        hits.extend(search_folder(self.foreign_dir, query, "foreign"))
         if self.arxiv:
             try:
                 hits.extend(search_arxiv(query, limit=3, http_get=self.http_get))
             except Exception:
                 pass
-        return hits[: limit + 5]
+        if self.web:
+            try:
+                hits.extend(search_wikipedia(query, limit=2, http_get=self.http_get))
+            except Exception:
+                pass
+            try:
+                hits.extend(search_oeis(query, limit=2, http_get=self.http_get))
+            except Exception:
+                pass
+        return hits[: limit + 8]
 
     def modules_for(self, query: str) -> list[str]:
         modules: list[str] = []

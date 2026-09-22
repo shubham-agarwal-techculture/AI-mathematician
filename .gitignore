@@ -8,3 +8,4 @@ lean_ws/
 *.sqlite
 aimath.yaml
 .aimath_scratch/
+docs/dist/*.md

@@ -47,3 +47,40 @@ def compute_budget(
         ram_reserve_bytes=reserve,
         memory_pressure=pressure,
     )
+
+
+@dataclass(frozen=True)
+class Timings:
+    lean_ms: float
+    llm_ms: float
+
+
+def steer_budget(budget: Budget, *, disk_free_bytes: int, temperature_c: float | None, timings: Timings | None) -> tuple[Budget, str]:
+    """Shrink work when the disk, the CPU temperature, or the slower side says so.
+
+    A GPU name is reported by the caller. This function does not start GPU work.
+    """
+    lean = budget.lean_workers
+    llm = budget.llm_inflight
+    note = "workers follow the CPU and RAM reserve"
+    if disk_free_bytes < 5 * _GB:
+        lean = 1
+        note = "free disk is under 5 GB; one Lean worker"
+    if temperature_c is not None and temperature_c >= 90:
+        lean = 1
+        llm = 1
+        note = "a sensor is at or above 90 C; one Lean worker and one model call"
+    if timings is not None and timings.lean_ms > 3 * max(timings.llm_ms, 1):
+        llm = 1
+        note = "Lean is the slow side; model calls cut to one"
+    elif timings is not None and timings.llm_ms > 3 * max(timings.lean_ms, 1):
+        note = "the model is the slow side; Lean workers stay at the host cap"
+    return (
+        Budget(
+            lean_workers=max(1, lean),
+            llm_inflight=max(1, llm),
+            ram_reserve_bytes=budget.ram_reserve_bytes,
+            memory_pressure=budget.memory_pressure,
+        ),
+        note,
+    )

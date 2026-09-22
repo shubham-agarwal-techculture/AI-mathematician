@@ -1,8 +1,8 @@
-"""JSON work messages for the local pool and for a future remote worker.
+"""JSON work messages for local workers and for the coordinator in `distributed.py`.
 
-A remote worker would read one JSON object per line (a work item) and write one
-JSON object per line (a work result). This package runs only the local worker.
-It does not open a network listener.
+A worker reads one JSON object per line (a work item) and writes one JSON object
+per line (a work result). `aimath serve` speaks this protocol on a socket. It
+binds to localhost unless a token is set.
 
 Example item::
 
@@ -19,7 +19,16 @@ import json
 from dataclasses import asdict, dataclass
 from typing import Any
 
-WORK_KINDS = ("prove", "conjecture", "check", "critique", "formalize")
+WORK_KINDS = (
+    "prove",
+    "conjecture",
+    "check",
+    "critique",
+    "formalize",
+    "solve",
+    "search",
+    "research",
+)
 
 
 @dataclass

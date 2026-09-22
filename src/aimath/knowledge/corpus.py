@@ -59,6 +59,12 @@ class Corpus:
                   FOREIGN KEY(statement_id) REFERENCES statements(id)
                 );
                 CREATE INDEX IF NOT EXISTS idx_statements_hash ON statements(content_hash);
+                CREATE TABLE IF NOT EXISTS timings (
+                  id INTEGER PRIMARY KEY,
+                  kind TEXT NOT NULL,
+                  ms REAL NOT NULL,
+                  created_at TEXT NOT NULL
+                );
                 """
             )
             self._conn.commit()
@@ -200,3 +206,65 @@ class Corpus:
     def list_systems(self) -> list[sqlite3.Row]:
         with self._lock:
             return list(self._conn.execute("SELECT name, status FROM systems ORDER BY name").fetchall())
+
+    def list_statements(self) -> list[sqlite3.Row]:
+        with self._lock:
+            return list(
+                self._conn.execute(
+                    """
+                    SELECT statements.id, statements.text, statements.status,
+                           statements.detail, statements.personality, systems.name AS system
+                    FROM statements
+                    JOIN systems ON systems.id = statements.system_id
+                    ORDER BY statements.id
+                    """
+                ).fetchall()
+            )
+
+    def accepted_lean(self, statement_id: int) -> str | None:
+        with self._lock:
+            row = self._conn.execute(
+                """
+                SELECT lean_src FROM attempts
+                WHERE statement_id = ? AND accepted = 1
+                ORDER BY id DESC LIMIT 1
+                """,
+                (statement_id,),
+            ).fetchone()
+        return None if row is None else str(row["lean_src"])
+
+    def failed_tactics(self, system: str, text: str) -> list[str]:
+        row = self.find_statement(system, text)
+        if row is None:
+            return []
+        with self._lock:
+            attempts = self._conn.execute(
+                "SELECT output FROM attempts WHERE statement_id = ? AND accepted = 0",
+                (row["id"],),
+            ).fetchall()
+        found: list[str] = []
+        for attempt in attempts:
+            for line in str(attempt["output"]).splitlines():
+                if line.startswith("tactic:"):
+                    tactic = line.split(":", 1)[1].strip()
+                    if tactic and tactic not in found:
+                        found.append(tactic)
+        return found
+
+    def record_timing(self, kind: str, ms: float) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO timings (kind, ms, created_at) VALUES (?, ?, ?)",
+                (kind, float(ms), _now()),
+            )
+            self._conn.commit()
+
+    def recent_timing(self, kind: str) -> float | None:
+        with self._lock:
+            rows = self._conn.execute(
+                "SELECT ms FROM timings WHERE kind = ? ORDER BY id DESC LIMIT 5",
+                (kind,),
+            ).fetchall()
+        if not rows:
+            return None
+        return sum(float(row["ms"]) for row in rows) / len(rows)

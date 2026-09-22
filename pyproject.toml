@@ -12,6 +12,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+docs = ["reportlab>=4"]
 
 [project.scripts]
 aimath = "aimath.cli:main"

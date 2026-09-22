@@ -38,7 +38,17 @@ class LeanConfig:
 @dataclass
 class KnowledgeConfig:
     arxiv: bool
+    web: bool
     db: Path
+    notes: Path
+    foreign: Path
+
+
+@dataclass
+class DistributedConfig:
+    host: str
+    port: int
+    token: str
 
 
 @dataclass
@@ -47,6 +57,7 @@ class AppConfig:
     host: HostConfig
     lean: LeanConfig
     knowledge: KnowledgeConfig
+    distributed: DistributedConfig
     root: Path
     path: Path
 
@@ -68,6 +79,7 @@ def load_config(path: Path) -> AppConfig:
     host = _section(raw, "host")
     lean = _section(raw, "lean")
     knowledge = _section(raw, "knowledge")
+    distributed = _section(raw, "distributed")
     provider = str(llm.get("provider") or "openai_compatible")
     if provider not in {"openai_compatible", "anthropic"}:
         raise ValueError(
@@ -92,7 +104,15 @@ def load_config(path: Path) -> AppConfig:
         ),
         knowledge=KnowledgeConfig(
             arxiv=bool(knowledge.get("arxiv", False)),
+            web=bool(knowledge.get("web", False)),
             db=(root / str(knowledge.get("db") or "aimath.sqlite")).resolve(),
+            notes=(root / str(knowledge.get("notes") or "notes")).resolve(),
+            foreign=(root / str(knowledge.get("foreign") or "foreign")).resolve(),
+        ),
+        distributed=DistributedConfig(
+            host=str(distributed.get("host") or "127.0.0.1"),
+            port=int(distributed.get("port") or 8765),
+            token=str(distributed.get("token") or ""),
         ),
         root=root,
         path=path,
