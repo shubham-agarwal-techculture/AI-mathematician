@@ -1,0 +1,5 @@
+name: Parity
+notes: A toy extension of Mathlib. These axioms are assumptions, not theorems.
+axioms:
+  - name: zero_even
+    statement: "∃ k : Nat, 0 = 2 * k"

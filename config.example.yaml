@@ -1,0 +1,28 @@
+# Copied to aimath.yaml by `aimath init`. Paths are relative to this file.
+
+llm:
+  # openai_compatible covers OpenAI, Groq, OpenRouter, Ollama, LM Studio, and vLLM.
+  # Use provider: anthropic for the Anthropic messages API.
+  provider: openai_compatible
+  base_url: https://api.openai.com/v1
+  model: gpt-4o-mini
+  # Leave empty for a local server that does not use a key (Ollama, LM Studio).
+  api_key_env: OPENAI_API_KEY
+
+host:
+  # Fraction of total RAM kept free for the rest of the machine.
+  ram_reserve_ratio: 0.25
+  # Assumed footprint of one Lean process that imports Mathlib.
+  lean_worker_gb: 3
+  max_llm_inflight: 2
+
+lean:
+  workspace: lean_ws
+  timeout_seconds: 180
+  # aimath init reads the toolchain pin from this URL and writes lean-toolchain.
+  toolchain_url: https://raw.githubusercontent.com/leanprover-community/mathlib4/master/lean-toolchain
+
+knowledge:
+  # arXiv abstracts are optional hints. They are never proofs.
+  arxiv: false
+  db: aimath.sqlite
